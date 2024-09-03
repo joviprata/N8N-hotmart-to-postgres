@@ -1,0 +1,913 @@
+{
+  "name": "Postgres Hotmart Sales",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://developers.hotmart.com/payments/api/v1/sales/history",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "transaction_status",
+              "value": "APPROVED"
+            },
+            {
+              "name": "transaction",
+              "value": "={{ $('Webhook Hotmart').item.json.body.data.purchase.transaction }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b32a60fb-3733-46a8-8e85-41dbb65a793f",
+      "name": "Hotmart API get UTM parameters",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        360
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "81tkEaKGgU599HwF",
+          "name": "Unnamed credential"
+        },
+        "oAuth2Api": {
+          "id": "lci5qewAUCtGhLBU",
+          "name": "EXPERT CREDENTIALS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "ofertas_hotmart",
+          "mode": "list",
+          "cachedResultName": "ofertas_hotmart"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "purchase_offer_code",
+              "value": "={{ $json.items[0].purchase.offer.code }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c0cafd33-2400-4175-90e8-58e1bd0ec234",
+      "name": "Offers Hotmart Select purchase offer by code",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        2300,
+        360
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "U8WnooCTi2OSArHP",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "f5ca06e4-1abc-4d9a-8b13-74de919f6ecc",
+              "leftValue": "={{ $json.purchase_offer_code }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "70260f11-7974-416e-915f-8a6c4c78cbec",
+              "leftValue": "={{ $json.purchase_offer_code }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6c9649f8-8247-4068-9a3b-9bcd3f925137",
+      "name": "Found the offer?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2520,
+        360
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "ofertas_hotmart",
+          "mode": "list",
+          "cachedResultName": "ofertas_hotmart"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "producer_name": "={{ $('Webhook Hotmart').item.json.body.data.producer.name }}",
+            "product_id": "={{ $('Webhook Hotmart').item.json.body.data.product.id }}",
+            "product_ucode": "={{ $('Webhook Hotmart').item.json.body.data.product.ucode }}",
+            "product_has_co_production": "={{ $('Webhook Hotmart').item.json.body.data.product.has_co_production }}",
+            "product_name": "={{ $('Webhook Hotmart').item.json.body.data.product.name }}",
+            "purchase_offer_code": "={{ $('Webhook Hotmart').item.json.body.data.purchase.offer.code }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "producer_name",
+              "displayName": "producer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_offer_code",
+              "displayName": "purchase_offer_code",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "product_ucode",
+              "displayName": "product_ucode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "product_has_co_production",
+              "displayName": "product_has_co_production",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "883611e8-53bc-4284-863d-86ceb23e4fbd",
+      "name": "Offers Hotmart Insert",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        2720,
+        520
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "U8WnooCTi2OSArHP",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "vendas_hotmart",
+          "mode": "list",
+          "cachedResultName": "vendas_hotmart"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "utm_source": "={{ $('Hotmart API get UTM parameters').item.json.items[0].purchase.tracking.source.split('|')[0] }}",
+            "utm_medium": "={{ $('Hotmart API get UTM parameters').item.json.items[0].purchase.tracking.source.split('|')[1] }}",
+            "utm_campaign": "={{ $('Hotmart API get UTM parameters').item.json.items[0].purchase.tracking.source.split('|')[2] }}",
+            "utm_term": "={{ $('Hotmart API get UTM parameters').item.json.items[0].purchase.tracking.source.split('|')[4] }}",
+            "utm_content": "={{ $('Hotmart API get UTM parameters').item.json.items[0].purchase.tracking.source.split('|')[5] }}",
+            "id_correspondente": "={{ $json.id }}",
+            "purchase_order_bump_is_order_bump": "={{ $('Webhook Hotmart').item.json.body.data.purchase.order_bump.is_order_bump }}",
+            "buyer_email": "={{ $('Webhook Hotmart').item.json.body.data.buyer.email }}",
+            "buyer_checkout_phone": "={{ $('Webhook Hotmart').item.json.body.data.buyer.checkout_phone }}",
+            "buyer_name": "={{ $('Webhook Hotmart').item.json.body.data.buyer.name }}",
+            "buyer_document": "={{ $('Webhook Hotmart').item.json.body.data.buyer.document }}",
+            "buyer_address_city": "={{ $('Webhook Hotmart').item.json.body.data.buyer.address.city }}",
+            "buyer_address_address": "={{ $('Webhook Hotmart').item.json.body.data.buyer.address.address }}",
+            "buyer_address_country": "={{ $('Webhook Hotmart').item.json.body.data.buyer.address.country }}",
+            "buyer_address_zipcode": "={{ $('Webhook Hotmart').item.json.body.data.buyer.address.zipcode }}",
+            "purchase_status": "={{ $('Webhook Hotmart').item.json.body.data.purchase.status }}",
+            "purchase_transaction": "={{ $('Webhook Hotmart').item.json.body.data.purchase.transaction }}",
+            "purchase_invoice_by": "={{ $('Webhook Hotmart').item.json.body.data.purchase.invoice_by }}",
+            "purchase_full_price_value": "={{ parseFloat($('Webhook Hotmart').item.json.body.data.purchase.full_price.value) }}",
+            "purchase_full_price_currency_value": "={{ $('Webhook Hotmart').item.json.body.data.purchase.full_price.currency_value }}",
+            "purchase_payment_type": "={{ $('Webhook Hotmart').item.json.body.data.purchase.payment.type }}",
+            "purchase_payment_installments_number": "={{ $('Webhook Hotmart').item.json.body.data.purchase.payment.installments_number }}",
+            "purchase_buyer_ip": "={{ $('Webhook Hotmart').item.json.body.data.buyer.ip }}",
+            "purchase_price_value": "={{ parseFloat($('Webhook Hotmart').item.json.body.data.purchase.price.value) }}",
+            "purchase_price_currency_value": "={{ $('Webhook Hotmart').item.json.body.data.purchase.price.currency_value }}",
+            "purchase_order_date": "={{ \n  new Date($('Webhook Hotmart').item.json.body.data.purchase.order_date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false, \n  year: 'numeric', month: '2-digit', day: '2-digit', \n  hour: '2-digit', minute: '2-digit', second: '2-digit' }) \n}}",
+            "purchase_approved_date": "={{ \n  new Date($('Webhook Hotmart').item.json.body.data.purchase.approved_date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false, \n  year: 'numeric', month: '2-digit', day: '2-digit', \n  hour: '2-digit', minute: '2-digit', second: '2-digit' }) \n}}",
+            "purchase_checkout_country_name": "={{ $('Webhook Hotmart').item.json.body.data.purchase.checkout_country.name }}",
+            "purchase_checkout_country_iso": "={{ $('Webhook Hotmart').item.json.body.data.purchase.checkout_country.iso }}",
+            "purchase_original_offer_price_value": "={{ parseFloat($('Webhook Hotmart').item.json.body.data.purchase.original_offer_price.value) }}",
+            "purchase_original_offer_price_currency_value": "={{ $('Webhook Hotmart').item.json.body.data.purchase.original_offer_price.currency_value }}",
+            "addon_commission_currency_value": "={{ $('Process Webhook').item.json.addon_commission_currency_value }}",
+            "addon_commission_value": "={{ $('Process Webhook').item.json.addon_commission_value }}",
+            "affiliates_commission_currency_value": "={{ $('Process Webhook').item.json.affiliate_commission_currency_value }}",
+            "affiliates_commission_value": "={{ $('Process Webhook').item.json.affiliate_commission_value }}",
+            "producer_commission_currency_value": "={{ $('Process Webhook').item.json.producer_commission_currency_value }}",
+            "producer_commission_value": "={{ $('Process Webhook').item.json.producer_commission_value }}",
+            "marketplace_commission_currency_value": "={{ $('Process Webhook').item.json.marketplace_commission_currency_value }}",
+            "marketplace_commission_value": "={{ $('Process Webhook').item.json.marketplace_commission_value }}",
+            "utm_campaign_id": "={{ $('Hotmart API get UTM parameters').item.json.items[0].purchase.tracking.source.split('|')[3] }}",
+            "purchase_tracking_source": "={{ $('Hotmart API get UTM parameters').item.json.items[0].purchase.tracking.source }}",
+            "purchase_tracking_source_sck": "={{ $('Hotmart API get UTM parameters').item.json.items[0].purchase.tracking.source_sck }}",
+            "version": "={{ $('Webhook Hotmart').item.json.body.data.version }}",
+            "event": "={{ $('Webhook Hotmart').item.json.body.data.event }}",
+            "creation_date": "={{ \n  new Date($('Webhook Hotmart').item.json.body.creation_date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false, \n  year: 'numeric', month: '2-digit', day: '2-digit', \n  hour: '2-digit', minute: '2-digit', second: '2-digit' }) \n}}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id_correspondente",
+              "displayName": "id_correspondente",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "purchase_original_offer_price_currency_value",
+              "displayName": "purchase_original_offer_price_currency_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_original_offer_price_value",
+              "displayName": "purchase_original_offer_price_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_checkout_country_iso",
+              "displayName": "purchase_checkout_country_iso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_checkout_country_name",
+              "displayName": "purchase_checkout_country_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_order_bump_is_order_bump",
+              "displayName": "purchase_order_bump_is_order_bump",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_approved_date",
+              "displayName": "purchase_approved_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_order_date",
+              "displayName": "purchase_order_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_price_currency_value",
+              "displayName": "purchase_price_currency_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_price_value",
+              "displayName": "purchase_price_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_buyer_ip",
+              "displayName": "purchase_buyer_ip",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_payment_installments_number",
+              "displayName": "purchase_payment_installments_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_payment_type",
+              "displayName": "purchase_payment_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_full_price_currency_value",
+              "displayName": "purchase_full_price_currency_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_full_price_value",
+              "displayName": "purchase_full_price_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_invoice_by",
+              "displayName": "purchase_invoice_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_transaction",
+              "displayName": "purchase_transaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_status",
+              "displayName": "purchase_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "buyer_address_zipcode",
+              "displayName": "buyer_address_zipcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "buyer_address_country",
+              "displayName": "buyer_address_country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "buyer_address_address",
+              "displayName": "buyer_address_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "buyer_address_city",
+              "displayName": "buyer_address_city",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "buyer_document",
+              "displayName": "buyer_document",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "buyer_name",
+              "displayName": "buyer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "buyer_checkout_phone",
+              "displayName": "buyer_checkout_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "buyer_email",
+              "displayName": "buyer_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creation_date",
+              "displayName": "creation_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "version",
+              "displayName": "version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_tracking_source_sck",
+              "displayName": "purchase_tracking_source_sck",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "purchase_tracking_source",
+              "displayName": "purchase_tracking_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "utm_source",
+              "displayName": "utm_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_medium",
+              "displayName": "utm_medium",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_campaign",
+              "displayName": "utm_campaign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "utm_campaign_id",
+              "displayName": "utm_campaign_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "utm_term",
+              "displayName": "utm_term",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "utm_content",
+              "displayName": "utm_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "marketplace_commission_value",
+              "displayName": "marketplace_commission_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "marketplace_commission_currency_value",
+              "displayName": "marketplace_commission_currency_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "producer_commission_value",
+              "displayName": "producer_commission_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "producer_commission_currency_value",
+              "displayName": "producer_commission_currency_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "affiliates_commission_value",
+              "displayName": "affiliates_commission_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "affiliates_commission_currency_value",
+              "displayName": "affiliates_commission_currency_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "addon_commission_value",
+              "displayName": "addon_commission_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "addon_commission_currency_value",
+              "displayName": "addon_commission_currency_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "423e0035-13b5-4370-8afd-59e54617767f",
+      "name": "Sales Hotmart Insert",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        2920,
+        360
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "U8WnooCTi2OSArHP",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the list of commissions from the input data\nconst commissions = $input.item.json.body.data.commissions;\n\n// List of sources to iterate through\nconst sources = ['MARKETPLACE', 'PRODUCER', 'AFFILIATE', 'ADDON'];\n\n// Initialize an object to store the commission values for each source\nlet commissionResults = {};\n\n// Initialize variables for each source\nsources.forEach(source => {\n  commissionResults[`${source.toLowerCase()}_commission_currency_value`] = null;\n  commissionResults[`${source.toLowerCase()}_commission_value`] = null;\n});\n\n// Iterate over the list of commissions\ncommissions.forEach(commission => {\n  // Check if the source is in the list of sources\n  if (sources.includes(commission.source)) {\n    const sourceKey = commission.source.toLowerCase();\n\n    // If the currency value is not yet set, set it to the first found currency value\n    if (commissionResults[`${sourceKey}_commission_currency_value`] === null) {\n      commissionResults[`${sourceKey}_commission_currency_value`] = commission.currency_value;\n    }\n\n    // If the currency value is set, add the value to the existing sum or initialize it\n    if (commissionResults[`${sourceKey}_commission_currency_value`] !== null) {\n      if (commissionResults[`${sourceKey}_commission_value`] === null) {\n        commissionResults[`${sourceKey}_commission_value`] = 0;\n      }\n      commissionResults[`${sourceKey}_commission_value`] += commission.value;\n    }\n  }\n});\n\n// Return the result as new fields\nreturn [\n  {\n    json: commissionResults\n  }\n];\n"
+      },
+      "id": "7c35ce52-9edf-4d91-bd6a-9b03713b2eae",
+      "name": "Process Webhook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1860,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "45dcf45e-f922-412b-b9ce-177c18bb3b4e",
+        "options": {}
+      },
+      "id": "fbcf2277-2f98-4acd-9018-c6048efc49ba",
+      "name": "Webhook Hotmart",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1640,
+        360
+      ],
+      "webhookId": "45dcf45e-f922-412b-b9ce-177c18bb3b4e"
+    }
+  ],
+  "connections": {
+    "Hotmart API get UTM parameters": {
+      "main": [
+        [
+          {
+            "node": "Offers Hotmart Select purchase offer by code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Offers Hotmart Select purchase offer by code": {
+      "main": [
+        [
+          {
+            "node": "Found the offer?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Found the offer?": {
+      "main": [
+        [
+          {
+            "node": "Sales Hotmart Insert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Offers Hotmart Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Offers Hotmart Insert": {
+      "main": [
+        [
+          {
+            "node": "Sales Hotmart Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Webhook": {
+      "main": [
+        [
+          {
+            "node": "Hotmart API get UTM parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Hotmart": {
+      "main": [
+        [
+          {
+            "node": "Process Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7aa5dcbb-1606-4151-a4f5-7a07f350db08",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a9aaa4b061baa8497826cdb029f66eb21effee81f980f66947bc7a3d2fa5d303"
+  },
+  "id": "yiOWoskXqgjGz4tX",
+  "tags": []
+}
